@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 
+import { HttpExceptionFilter } from './common/filters/http-exception'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
 
@@ -22,6 +23,10 @@ import { HealthModule } from './modules/health/health.module'
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: ZodSerializerInterceptor
+		},
+		{
+			provide: APP_FILTER,
+			useClass: HttpExceptionFilter
 		}
 	]
 })
