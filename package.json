@@ -30,8 +30,10 @@
     "@ramz001-cinema/core": "^1.0.4",
     "@scalar/nestjs-api-reference": "^1.1.0",
     "axios": "^1.13.6",
+    "nestjs-zod": "^5.1.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

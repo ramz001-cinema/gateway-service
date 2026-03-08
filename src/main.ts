@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { apiReference } from '@scalar/nestjs-api-reference'
+import { cleanupOpenApiDoc } from 'nestjs-zod'
 
 import { AppModule } from './app.module'
 
@@ -10,7 +11,7 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
 
 	const config = app.get(ConfigService)
-	const logger = new Logger()
+	const logger = new Logger('Bootstrap')
 
 	app.enableCors({
 		origin: config.getOrThrow<string>('HTTP_CORS').split(','),
@@ -21,11 +22,12 @@ async function bootstrap() {
 		.setTitle('TeaCinema Gateway API')
 		.setDescription('API docs')
 		.setVersion('1.0.0')
+		.addBearerAuth()
 		.build()
 
 	const document = SwaggerModule.createDocument(app, swaggerConfig)
 
-	SwaggerModule.setup('openapi', app, document, {
+	SwaggerModule.setup('openapi', app, cleanupOpenApiDoc(document), {
 		swaggerOptions: { persistAuthorization: true }
 	})
 
@@ -38,4 +40,4 @@ async function bootstrap() {
 	logger.log(`Gateway service is running on ${host}`)
 	logger.log(`Swagger UI is available at ${host}/docs`)
 }
-bootstrap()
+void bootstrap()

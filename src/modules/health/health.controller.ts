@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common'
+import { ApiOperation } from '@nestjs/swagger'
 import {
 	HealthCheck,
 	HealthCheckService,
@@ -12,6 +13,11 @@ export class HealthController {
 		private http: HttpHealthIndicator
 	) {}
 
+	@ApiOperation({
+		summary: 'Check the health of the gateway service',
+		description:
+			'Returns the health status of the gateway service and its dependencies.'
+	})
 	@Get()
 	@HealthCheck()
 	check() {

@@ -1,14 +1,28 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 
-import { HealthModule } from './health/health.module'
+import { AuthModule } from './modules/auth/auth.module'
+import { HealthModule } from './modules/health/health.module'
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true
 		}),
-		HealthModule
+		HealthModule,
+		AuthModule
+	],
+	providers: [
+		{
+			provide: APP_PIPE,
+			useClass: ZodValidationPipe
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: ZodSerializerInterceptor
+		}
 	]
 })
 export class AppModule {}
