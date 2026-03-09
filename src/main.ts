@@ -17,7 +17,7 @@ async function bootstrap() {
 	app.enableCors(getCorsConfig(config))
 
 	const swaggerConfig = new DocumentBuilder()
-		.setTitle('TeaCinema Gateway API')
+		.setTitle('Cinema Gateway API')
 		.setDescription('API docs')
 		.setVersion('1.0.0')
 		.addBearerAuth()
