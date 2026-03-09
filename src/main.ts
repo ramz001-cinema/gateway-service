@@ -6,6 +6,7 @@ import { apiReference } from '@scalar/nestjs-api-reference'
 import { cleanupOpenApiDoc } from 'nestjs-zod'
 
 import { AppModule } from './app.module'
+import { getCorsConfig } from './common/config'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
@@ -13,10 +14,7 @@ async function bootstrap() {
 	const config = app.get(ConfigService)
 	const logger = new Logger('Bootstrap')
 
-	app.enableCors({
-		origin: config.getOrThrow<string>('HTTP_CORS').split(','),
-		credentials: true
-	})
+	app.enableCors(getCorsConfig(config))
 
 	const swaggerConfig = new DocumentBuilder()
 		.setTitle('TeaCinema Gateway API')

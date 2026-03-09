@@ -14,7 +14,7 @@ export class HealthController {
 	) {}
 
 	@ApiOperation({
-		summary: 'Check the health of the gateway service',
+		summary: 'Health Check',
 		description:
 			'Returns the health status of the gateway service and its dependencies.'
 	})
