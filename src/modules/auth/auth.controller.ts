@@ -6,10 +6,13 @@ import {
 	ApiOperation
 } from '@nestjs/swagger'
 
+import type { AuthClientGrpc } from './auth.grpc'
 import { SendOTPDto } from './dto'
 
 @Controller('auth')
 export class AuthController {
+	constructor(private readonly client: AuthClientGrpc) {}
+
 	@ApiOperation({
 		summary: 'Send OTP to user',
 		description:
@@ -81,10 +84,6 @@ export class AuthController {
 	@Post('otp/send')
 	@HttpCode(HttpStatus.OK)
 	sendOtp(@Body() dto: SendOTPDto) {
-		console.log(dto)
-
-		return {
-			success: true
-		}
+		return this.client.sendOtp(dto)
 	}
 }
