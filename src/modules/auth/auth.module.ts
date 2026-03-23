@@ -16,7 +16,7 @@ import { AuthClientGrpc } from './auth.grpc'
 					options: {
 						package: 'auth.v1',
 						protoPath:
-							'node_modules/@ramz001-cinama/contracts/proto/auth.proto',
+							'node_modules/@ramz001-cinema/contracts/proto/auth.proto',
 						url: configService.getOrThrow<string>('AUTH_GRPC_URL')
 					}
 				}),

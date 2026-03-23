@@ -6,7 +6,7 @@ import {
 	ApiOperation
 } from '@nestjs/swagger'
 
-import type { AuthClientGrpc } from './auth.grpc'
+import { AuthClientGrpc } from './auth.grpc'
 import { SendOTPDto } from './dto'
 
 @Controller('auth')
