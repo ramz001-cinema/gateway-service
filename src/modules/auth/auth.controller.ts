@@ -16,7 +16,7 @@ export class AuthController {
 	@ApiOperation({
 		summary: 'Send OTP to user',
 		description:
-			'Sends a one-time password (OTP) to the user via email or phone for authentication purposes.'
+			'Sends a one-time password (OTP) to the user via email or phone for authentication purposes. If user does not exist, it will be created automatically.'
 	})
 	@ApiBody({
 		type: SendOTPDto,
@@ -42,7 +42,7 @@ export class AuthController {
 		schema: {
 			type: 'object',
 			properties: {
-				success: {
+				ok: {
 					type: 'boolean',
 					example: true
 				}
