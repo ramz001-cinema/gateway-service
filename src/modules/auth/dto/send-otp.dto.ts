@@ -1,4 +1,3 @@
-import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
 import { createZodDto } from 'nestjs-zod'
 import validator from 'validator'
 import z from 'zod'
@@ -6,14 +5,14 @@ import z from 'zod'
 const SendOTPRequest = z
 	.object({
 		id: z.string(),
-		type: z.enum(OtpType)
+		type: z.enum(['email', 'phone'])
 	})
 	.refine(
 		data => {
 			switch (data.type) {
-				case OtpType.OTP_TYPE_EMAIL:
+				case 'email':
 					return validator.isEmail(data.id)
-				case OtpType.OTP_TYPE_PHONE:
+				case 'phone':
 					return /^\+[1-9]\d{1,14}$/.test(data.id)
 				default:
 					return false

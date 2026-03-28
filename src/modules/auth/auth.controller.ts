@@ -5,6 +5,8 @@ import {
 	ApiOkResponse,
 	ApiOperation
 } from '@nestjs/swagger'
+import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
+import { ZodApiError } from 'src/common/docs/zod-api-error'
 
 import { AuthClientGrpc } from './auth.grpc'
 import { SendOTPDto } from './dto'
@@ -21,14 +23,14 @@ export class AuthController {
 	@ApiBody({
 		type: SendOTPDto,
 		examples: {
-			emailExample: {
+			email: {
 				summary: 'Email request example',
 				value: {
 					id: 'user@example.com',
 					type: 'email'
 				}
 			},
-			phoneExample: {
+			phone: {
 				summary: 'Phone request example',
 				value: {
 					id: '+1234567890',
@@ -53,37 +55,18 @@ export class AuthController {
 		description: 'Validation failed.',
 		schema: {
 			type: 'object',
-			properties: {
-				statusCode: {
-					type: 'number',
-					example: 400
-				},
-				message: {
-					type: 'array',
-					items: {
-						type: 'object',
-						properties: {
-							code: { type: 'string', example: 'invalid_type' },
-							expected: { type: 'string', example: 'string' },
-							received: { type: 'string', example: 'undefined' },
-							path: {
-								type: 'array',
-								items: { type: 'string', example: 'id' }
-							},
-							message: { type: 'string', example: 'Required' }
-						}
-					}
-				},
-				error: {
-					type: 'string',
-					example: 'Bad Request'
-				}
-			}
+			properties: ZodApiError
 		}
 	})
 	@Post('otp/send')
 	@HttpCode(HttpStatus.OK)
 	sendOtp(@Body() dto: SendOTPDto) {
-		return this.client.sendOtp(dto)
+		return this.client.sendOtp({
+			id: dto.id,
+			type:
+				dto.type === 'email'
+					? OtpType.OTP_TYPE_EMAIL
+					: OtpType.OTP_TYPE_PHONE
+		})
 	}
 }
