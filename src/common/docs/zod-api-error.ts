@@ -12,7 +12,7 @@ export const ZodApiError = {
 				expected: { type: 'string', example: 'string' },
 				path: {
 					type: 'array',
-					items: { type: 'string', example: 'id' }
+					items: { type: 'string', example: 'string' }
 				},
 				message: { type: 'string', example: 'Required' }
 			}

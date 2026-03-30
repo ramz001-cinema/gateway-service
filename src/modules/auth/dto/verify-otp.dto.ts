@@ -1,13 +1,14 @@
-import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
-import { describeEnum } from 'src/common/docs/describe-enum'
 import { createZodDto } from 'nestjs-zod'
 import validator from 'validator'
 import z from 'zod'
+import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
+import { describeEnum } from 'src/common/docs/describe-enum'
 
-const SendOTPRequest = z
+const VerifyOTPRequest = z
 	.object({
 		id: z.string(),
-		type: z.enum(OtpType as any).describe(describeEnum(OtpType))
+		type: z.enum(OtpType).describe(describeEnum(OtpType)),
+		otp: z.string().length(6, 'OTP code must be exactly 6 characters long')
 	})
 	.refine(
 		data => {
@@ -27,4 +28,4 @@ const SendOTPRequest = z
 	)
 	.strict()
 
-export class SendOTPDto extends createZodDto(SendOTPRequest) {}
+export class VerifyOTPDto extends createZodDto(VerifyOTPRequest) {}
