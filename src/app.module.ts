@@ -27,11 +27,11 @@ import { GrpcExceptionsFilter } from './common/filters/grpc-exception'
 		},
 		{
 			provide: APP_FILTER,
-			useClass: HttpExceptionFilter
+			useClass: GrpcExceptionsFilter
 		},
 		{
 			provide: APP_FILTER,
-			useClass: GrpcExceptionsFilter
+			useClass: HttpExceptionFilter
 		}
 	]
 })

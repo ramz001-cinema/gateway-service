@@ -14,7 +14,7 @@ export class AuthController {
 	constructor(private readonly client: AuthClientGrpc) {}
 
 	@ApiOperation({
-		summary: 'Send OTP to user',
+		summary: 'Send OTP',
 		description:
 			'Sends a one-time password (OTP) to the user via email or phone for authentication purposes. If user does not exist, it will be created automatically.'
 	})
@@ -43,7 +43,9 @@ export class AuthController {
 		return this.client.sendOtp(dto)
 	}
 
-	@Post('otp/verify')
+	@ApiOperation({
+		summary: 'Verify OTP'
+	})
 	@ApiBadRequestResponse({
 		description: 'Validation failed.',
 		schema: {
@@ -68,6 +70,7 @@ export class AuthController {
 			}
 		}
 	})
+	@Post('otp/verify')
 	verifyOtp(@Body() dto: VerifyOTPDto) {
 		return this.client.verifyOtp(dto)
 	}

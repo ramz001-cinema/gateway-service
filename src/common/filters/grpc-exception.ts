@@ -9,29 +9,40 @@ import { RpcException } from '@nestjs/microservices'
 import { Response } from 'express'
 import { grpcToHttp } from '../utils/grpc-to-http'
 
-interface GrpcError {
+interface RawGrpcError {
 	code?: number
-	message?: string
-	details?: unknown
+	details?: string // ← remote gRPC errors use this
+	message?: string // ← local RpcException uses this
 }
 
-@Catch(RpcException)
+@Catch(RpcException, Error) // catch both
 export class GrpcExceptionsFilter implements ExceptionFilter {
 	private readonly logger = new Logger(GrpcExceptionsFilter.name)
 
-	catch(exception: RpcException, host: ArgumentsHost) {
+	catch(exception: RpcException | Error, host: ArgumentsHost) {
 		const ctx = host.switchToHttp()
 		const response = ctx.getResponse<Response>()
 
-		const error = exception.getError() as GrpcError | string
+		let grpcCode = 2 // UNKNOWN fallback
+		let message = 'Unknown error'
+		let details: unknown = undefined
 
-		// RpcException can be thrown with a plain string too
-		const grpcCode = typeof error === 'object' ? (error.code ?? 2) : 2
-		const message =
-			typeof error === 'object'
-				? (error.message ?? 'Unknown error')
-				: error
-		const details = typeof error === 'object' ? error.details : undefined
+		if (exception instanceof RpcException) {
+			// locally thrown GrpcException
+			const error = exception.getError() as RawGrpcError | string
+			if (typeof error === 'object') {
+				grpcCode = error.code ?? 2
+				message = error.message ?? error.details ?? 'Unknown error'
+				details = error.details
+			} else {
+				message = error
+			}
+		} else {
+			// raw gRPC error coming back over the wire
+			const error = exception as unknown as RawGrpcError
+			grpcCode = error.code ?? 2
+			message = error.details ?? error.message ?? 'Unknown error'
+		}
 
 		const httpStatus = grpcToHttp(grpcCode)
 
@@ -42,7 +53,7 @@ export class GrpcExceptionsFilter implements ExceptionFilter {
 		response.status(httpStatus).json({
 			statusCode: httpStatus,
 			message,
-			...(details ? { details } : {})
+			...(details && typeof details !== 'string' ? { details } : {})
 		})
 	}
 }
