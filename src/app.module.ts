@@ -6,6 +6,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { HttpExceptionFilter } from './common/filters/http-exception'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
+import { GrpcExceptionsFilter } from './common/filters/grpc-exception'
 
 @Module({
 	imports: [
@@ -27,6 +28,10 @@ import { HealthModule } from './modules/health/health.module'
 		{
 			provide: APP_FILTER,
 			useClass: HttpExceptionFilter
+		},
+		{
+			provide: APP_FILTER,
+			useClass: GrpcExceptionsFilter
 		}
 	]
 })

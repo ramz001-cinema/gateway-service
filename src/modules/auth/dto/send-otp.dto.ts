@@ -1,4 +1,4 @@
-import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
+import { OtpType } from '@ramz001-cinema/contracts'
 import { describeEnum } from 'src/common/docs/describe-enum'
 import { createZodDto } from 'nestjs-zod'
 import validator from 'validator'
@@ -7,7 +7,7 @@ import z from 'zod'
 const SendOTPRequest = z
 	.object({
 		id: z.string(),
-		type: z.enum(OtpType as any).describe(describeEnum(OtpType))
+		type: z.enum(OtpType).describe(describeEnum(OtpType))
 	})
 	.refine(
 		data => {
@@ -22,7 +22,7 @@ const SendOTPRequest = z
 		},
 		{
 			error: 'Invalid id format for the specified type.',
-			path: ['id']
+			path: ['id', 'type']
 		}
 	)
 	.strict()

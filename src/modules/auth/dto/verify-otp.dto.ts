@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod'
 import validator from 'validator'
 import z from 'zod'
-import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
+import { OtpType } from '@ramz001-cinema/contracts'
 import { describeEnum } from 'src/common/docs/describe-enum'
 
 const VerifyOTPRequest = z

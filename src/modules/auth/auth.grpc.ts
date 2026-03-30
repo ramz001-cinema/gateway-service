@@ -4,7 +4,7 @@ import {
 	AuthServiceClient,
 	SendOtpRequest,
 	VerifyOtpRequest
-} from '@ramz001-cinema/contracts/gen/auth'
+} from '@ramz001-cinema/contracts'
 
 @Injectable()
 export class AuthClientGrpc implements OnModuleInit {
