@@ -56,11 +56,11 @@ export class AuthController {
 		schema: {
 			type: 'object',
 			properties: {
-				access_token: {
+				accessToken: {
 					type: 'string',
 					description: 'JWT access token for authenticated user.'
 				},
-				refresh_token: {
+				refreshToken: {
 					type: 'string',
 					description:
 						'JWT refresh token for obtaining new access tokens.'
