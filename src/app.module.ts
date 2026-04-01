@@ -6,7 +6,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
 import { GlobalExceptionsFilter } from './common/filters/global-exception'
-import { validateEnv } from './common/config/env-validator'
+import { validateEnv } from './common/config'
 
 @Module({
 	imports: [
