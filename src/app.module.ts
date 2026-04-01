@@ -6,11 +6,13 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
 import { GlobalExceptionsFilter } from './common/filters/global-exception'
+import { validateEnv } from './common/config/env-validator'
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
-			isGlobal: true
+			isGlobal: true,
+			validate: validateEnv
 		}),
 		HealthModule,
 		AuthModule
