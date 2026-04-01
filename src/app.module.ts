@@ -3,10 +3,9 @@ import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 
-import { HttpExceptionFilter } from './common/filters/http-exception'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
-import { GrpcExceptionsFilter } from './common/filters/grpc-exception'
+import { GlobalExceptionsFilter } from './common/filters/global-exception'
 
 @Module({
 	imports: [
@@ -27,11 +26,7 @@ import { GrpcExceptionsFilter } from './common/filters/grpc-exception'
 		},
 		{
 			provide: APP_FILTER,
-			useClass: GrpcExceptionsFilter
-		},
-		{
-			provide: APP_FILTER,
-			useClass: HttpExceptionFilter
+			useClass: GlobalExceptionsFilter
 		}
 	]
 })

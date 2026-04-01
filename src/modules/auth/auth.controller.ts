@@ -71,6 +71,7 @@ export class AuthController {
 		}
 	})
 	@Post('otp/verify')
+	@HttpCode(HttpStatus.OK)
 	verifyOtp(@Body() dto: VerifyOTPDto) {
 		return this.client.verifyOtp(dto)
 	}
