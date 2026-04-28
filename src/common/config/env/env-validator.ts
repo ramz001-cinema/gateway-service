@@ -7,8 +7,12 @@ const envSchema = z.object({
 	HTTP_PORT: z.coerce.number().int().positive(),
 	HTTP_HOST: z.url().nonempty(),
 	HTTP_CORS: z.string().nonempty(),
-	AUTH_GRPC_URL: z.url().nonempty()
+	AUTH_GRPC_URL: z.url().nonempty(),
+	COOKIES_DOMAIN: z.string().nonempty(),
+	COOKIES_SECRET: z.string().nonempty()
 })
+
+export type EnvType = z.infer<typeof envSchema>
 
 export function validateEnv(config: Record<string, unknown>) {
 	return envSchema.parse(config)

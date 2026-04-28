@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	HttpCode,
+	HttpStatus,
+	Post,
+	Res
+} from '@nestjs/common'
 import {
 	ApiBadRequestResponse,
 	ApiOkResponse,
@@ -8,10 +15,17 @@ import { ZodApiError } from 'src/common/docs/zod-api-error'
 
 import { AuthClientGrpc } from './auth.grpc'
 import { SendOTPDto, VerifyOTPDto } from './dto'
+import express from 'express'
+import { lastValueFrom } from 'rxjs'
+import { ConfigService } from '@nestjs/config'
+import { EnvType } from 'src/common/config'
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly client: AuthClientGrpc) {}
+	constructor(
+		private readonly client: AuthClientGrpc,
+		private readonly configService: ConfigService<EnvType>
+	) {}
 
 	@ApiOperation({
 		summary: 'Send OTP',
@@ -54,25 +68,39 @@ export class AuthController {
 		}
 	})
 	@ApiOkResponse({
-		description: 'OTP has been verified successfully.',
+		description:
+			'OTP has been verified successfully. Refresh token is set as an HTTP-only cookie.',
 		schema: {
 			type: 'object',
 			properties: {
 				accessToken: {
 					type: 'string',
 					description: 'JWT access token for authenticated user.'
-				},
-				refreshToken: {
-					type: 'string',
-					description:
-						'JWT refresh token for obtaining new access tokens.'
 				}
 			}
 		}
 	})
 	@Post('otp/verify')
 	@HttpCode(HttpStatus.OK)
-	verifyOtp(@Body() dto: VerifyOTPDto) {
-		return this.client.verifyOtp(dto)
+	async verifyOtp(
+		@Body() dto: VerifyOTPDto,
+		@Res({ passthrough: true }) res: express.Response
+	) {
+		const { accessToken, refreshToken } = await lastValueFrom(
+			this.client.verifyOtp(dto)
+		)
+
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			secure:
+				this.configService.get<string>('NODE_ENV') === 'production'
+					? true
+					: false,
+			domain: this.configService.get<string>('COOKIES_DOMAIN'),
+			sameSite: 'lax',
+			maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+		})
+
+		return { accessToken }
 	}
 }

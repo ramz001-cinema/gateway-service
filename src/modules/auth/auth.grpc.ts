@@ -8,7 +8,7 @@ import {
 
 @Injectable()
 export class AuthClientGrpc implements OnModuleInit {
-	private authService: AuthServiceClient
+	private authService!: AuthServiceClient
 	constructor(@Inject('AUTH_PACKAGE') private readonly client: ClientGrpc) {}
 
 	onModuleInit() {
