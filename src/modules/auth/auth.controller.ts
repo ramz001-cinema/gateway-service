@@ -111,6 +111,18 @@ export class AuthController {
 		description:
 			"Refresh the user's access token using a valid refresh token stored in an HTTP-only cookie."
 	})
+	@ApiOkResponse({
+		description: 'Access token has been refreshed successfully.',
+		schema: {
+			type: 'object',
+			properties: {
+				accessToken: {
+					type: 'string',
+					description: 'New JWT access token for authenticated user.'
+				}
+			}
+		}
+	})
 	@Post('refresh')
 	@HttpCode(HttpStatus.OK)
 	async refreshToken(
@@ -138,5 +150,39 @@ export class AuthController {
 		})
 
 		return { accessToken }
+	}
+
+	@ApiOperation({
+		summary: 'Logout',
+		description:
+			'Logs out the user by clearing the refresh token cookie on the client.'
+	})
+	@ApiOkResponse({
+		description: 'User has been logged out successfully.',
+		schema: {
+			type: 'object',
+			properties: {
+				ok: {
+					type: 'boolean',
+					example: true
+				}
+			}
+		}
+	})
+	@Post('logout')
+	@HttpCode(HttpStatus.OK)
+	logout(@Res({ passthrough: true }) res: express.Response) {
+		res.cookie('refreshToken', '', {
+			httpOnly: true,
+			secure:
+				this.configService.get<string>('NODE_ENV') === 'production'
+					? true
+					: false,
+			domain: this.configService.get<string>('COOKIES_DOMAIN'),
+			expires: new Date(0),
+			sameSite: 'lax'
+		})
+
+		return { ok: true }
 	}
 }
