@@ -1,15 +1,19 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import type { ClientGrpc } from '@nestjs/microservices'
+import * as microservices from '@nestjs/microservices'
 import {
 	AuthServiceClient,
 	SendOtpRequest,
-	VerifyOtpRequest
+	VerifyOtpRequest,
+	RefreshTokenRequest
 } from '@ramz001-cinema/contracts'
 
 @Injectable()
 export class AuthClientGrpc implements OnModuleInit {
 	private authService!: AuthServiceClient
-	constructor(@Inject('AUTH_PACKAGE') private readonly client: ClientGrpc) {}
+	constructor(
+		@Inject('AUTH_PACKAGE')
+		private readonly client: microservices.ClientGrpc
+	) {}
 
 	onModuleInit() {
 		this.authService =
@@ -22,5 +26,9 @@ export class AuthClientGrpc implements OnModuleInit {
 
 	verifyOtp(request: VerifyOtpRequest) {
 		return this.authService.verifyOtp(request)
+	}
+
+	refreshToken(request: RefreshTokenRequest) {
+		return this.authService.refreshToken(request)
 	}
 }
