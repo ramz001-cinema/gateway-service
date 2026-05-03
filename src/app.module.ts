@@ -7,7 +7,9 @@ import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
 import { GlobalExceptionsFilter } from './common/filters/global-exception'
 import { validateEnv } from './common/config'
-
+import { PassportModule } from '@ramz001-cinema/passport'
+import { ConfigService } from '@nestjs/config'
+import { EnvType } from './common/config'
 @Module({
 	imports: [
 		ConfigModule.forRoot({
@@ -15,7 +17,15 @@ import { validateEnv } from './common/config'
 			validate: validateEnv
 		}),
 		HealthModule,
-		AuthModule
+		AuthModule,
+		PassportModule.registerAsync({
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService<EnvType>) => ({
+				secretKey: configService.getOrThrow<string>(
+					'PASSPORT_SECRET_KEY'
+				)
+			})
+		})
 	],
 	providers: [
 		{

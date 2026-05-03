@@ -9,7 +9,8 @@ const envSchema = z.object({
 	HTTP_CORS: z.string().nonempty(),
 	AUTH_GRPC_URL: z.url().nonempty(),
 	COOKIES_DOMAIN: z.string().nonempty(),
-	COOKIES_SECRET: z.string().nonempty()
+	COOKIES_SECRET: z.string().nonempty(),
+	PASSPORT_SECRET_KEY: z.string().nonempty()
 })
 
 export type EnvType = z.infer<typeof envSchema>
