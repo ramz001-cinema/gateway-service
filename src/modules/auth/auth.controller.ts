@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	Get,
 	HttpCode,
 	HttpStatus,
 	Post,
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/common'
 import {
 	ApiBadRequestResponse,
+	ApiBearerAuth,
 	ApiOkResponse,
 	ApiOperation
 } from '@nestjs/swagger'
@@ -21,6 +23,7 @@ import express from 'express'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
 import { EnvType } from 'src/common/config'
+import { Protected } from 'src/common/decorators/protected.decorator'
 
 @Controller('auth')
 export class AuthController {
@@ -183,6 +186,13 @@ export class AuthController {
 			sameSite: 'lax'
 		})
 
+		return { ok: true }
+	}
+
+	@ApiBearerAuth()
+	@Protected()
+	@Get('profile')
+	getProfile() {
 		return { ok: true }
 	}
 }

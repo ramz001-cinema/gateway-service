@@ -42,8 +42,12 @@ export class AuthGuard implements CanActivate {
 	private extractToken(request: Request) {
 		const header = request.headers['authorization']
 
-		if (!header) {
+		if (!header || typeof header !== 'string') {
 			throw new UnauthorizedException('Authorization header is missing')
+		}
+
+		if (header === 'Bearer') {
+			throw new UnauthorizedException('Token is missing')
 		}
 
 		if (!header.startsWith('Bearer ')) {
