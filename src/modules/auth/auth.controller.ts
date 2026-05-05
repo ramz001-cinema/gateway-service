@@ -24,6 +24,7 @@ import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
 import { EnvType } from 'src/common/config'
 import { Protected } from 'src/common/decorators/protected.decorator'
+import { CurrentUser } from 'src/common/decorators'
 
 @Controller('auth')
 export class AuthController {
@@ -192,7 +193,7 @@ export class AuthController {
 	@ApiBearerAuth()
 	@Protected()
 	@Get('profile')
-	getProfile() {
-		return { ok: true }
+	getProfile(@CurrentUser() userId: string) {
+		return { id: userId }
 	}
 }

@@ -8,8 +8,8 @@ import { PassportService } from '@ramz001-cinema/passport'
 import { Request } from 'express'
 
 export interface AuthenticatedRequest extends Request {
-	user: {
-		id: string
+	user?: {
+		id?: string
 	}
 }
 
