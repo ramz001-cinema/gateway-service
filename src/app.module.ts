@@ -10,6 +10,7 @@ import { validateEnv } from './common/config'
 import { PassportModule } from '@ramz001-cinema/passport'
 import { ConfigService } from '@nestjs/config'
 import { EnvType } from './common/config'
+import { AccountModule } from './modules/account/account.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({
@@ -25,7 +26,8 @@ import { EnvType } from './common/config'
 					'PASSPORT_SECRET_KEY'
 				)
 			})
-		})
+		}),
+		AccountModule
 	],
 	providers: [
 		{

@@ -5,13 +5,15 @@ import {
 	SendOtpRequest,
 	VerifyOtpRequest,
 	RefreshTokenRequest
-} from '@ramz001-cinema/contracts'
+} from '@ramz001-cinema/contracts/gen/auth'
+
+export const AUTH_CLIENT_TOKEN = Symbol('AUTH_CLIENT_TOKEN')
 
 @Injectable()
 export class AuthClientGrpc implements OnModuleInit {
 	private authService!: AuthServiceClient
 	constructor(
-		@Inject('AUTH_PACKAGE')
+		@Inject(AUTH_CLIENT_TOKEN)
 		private readonly client: microservices.ClientGrpc
 	) {}
 

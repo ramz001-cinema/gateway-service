@@ -1,4 +1,4 @@
-import { OtpType } from '@ramz001-cinema/contracts'
+import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
 import { describeEnum } from 'src/common/docs/describe-enum'
 import { createZodDto } from 'nestjs-zod'
 import validator from 'validator'

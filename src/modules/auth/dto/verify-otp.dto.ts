@@ -1,10 +1,12 @@
 import { createZodDto } from 'nestjs-zod'
 import validator from 'validator'
 import z from 'zod'
-import { OtpType } from '@ramz001-cinema/contracts'
+import { OtpType } from '@ramz001-cinema/contracts/gen/auth'
 import { describeEnum } from 'src/common/docs/describe-enum'
 
-const VerifyOTPRequest = z
+export type ZodEntriesOf<T> = { [Key in keyof T]: z.ZodType<T[Key]> }
+
+const VerifyOTP = z
 	.object({
 		id: z.string(),
 		type: z.enum(OtpType).describe(describeEnum(OtpType)),
@@ -26,6 +28,5 @@ const VerifyOTPRequest = z
 			path: ['id']
 		}
 	)
-	.strict()
 
-export class VerifyOTPDto extends createZodDto(VerifyOTPRequest) {}
+export class VerifyOTPDto extends createZodDto(VerifyOTP) {}
