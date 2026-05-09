@@ -3,7 +3,7 @@ import * as microservices from '@nestjs/microservices'
 import {
 	AccountServiceClient,
 	GetProfileRequest
-} from '@ramz001-cinema/contracts/gen/account'
+} from '@ramz001-cinema/contracts/gen/account/v1'
 
 export const ACCOUNT_CLIENT_TOKEN = Symbol('ACCOUNT_CLIENT_TOKEN')
 

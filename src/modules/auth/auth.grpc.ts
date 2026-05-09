@@ -5,7 +5,7 @@ import {
 	SendOtpRequest,
 	VerifyOtpRequest,
 	RefreshTokenRequest
-} from '@ramz001-cinema/contracts/gen/auth'
+} from '@ramz001-cinema/contracts/gen/auth/v1'
 
 export const AUTH_CLIENT_TOKEN = Symbol('AUTH_CLIENT_TOKEN')
 

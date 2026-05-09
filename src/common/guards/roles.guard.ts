@@ -10,7 +10,7 @@ import { ROLES_KEY } from '../decorators'
 import { AuthenticatedRequest } from './auth.guard'
 import { lastValueFrom } from 'rxjs'
 import { AccountClientGrpc } from 'src/modules/account/account.grpc'
-import { Role } from '@ramz001-cinema/contracts/gen/account'
+import { Role } from '@ramz001-cinema/contracts/gen/common/v1'
 
 @Injectable()
 export class RolesGuard implements CanActivate {

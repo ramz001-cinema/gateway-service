@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common'
 import { PROTO_PATHS } from '@ramz001-cinema/contracts'
 import { AuthController } from './auth.controller'
 import { AuthClientGrpc } from './auth.grpc'
-import { AUTH_V1_PACKAGE_NAME } from '@ramz001-cinema/contracts/gen/auth'
+import { AUTH_V1_PACKAGE_NAME } from '@ramz001-cinema/contracts/gen/auth/v1'
 import { AUTH_CLIENT_TOKEN } from './auth.grpc'
 import { createGrpcClient } from 'src/common/utils/create-grpc-client'
 

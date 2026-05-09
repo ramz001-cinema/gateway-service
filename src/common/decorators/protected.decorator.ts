@@ -1,6 +1,6 @@
 import { applyDecorators, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '../guards'
-import { Role } from '@ramz001-cinema/contracts/gen/account'
+import { Role } from '@ramz001-cinema/contracts/gen/common/v1'
 import { Roles } from './roles.decorator'
 import { RolesGuard } from '../guards/roles.guard'
 
