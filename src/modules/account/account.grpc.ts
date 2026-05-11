@@ -2,7 +2,9 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import * as microservices from '@nestjs/microservices'
 import {
 	AccountServiceClient,
-	GetProfileRequest
+	ConfirmContactChangeRequest,
+	GetProfileRequest,
+	InitContactChangeRequest
 } from '@ramz001-cinema/contracts/gen/account/v1'
 
 export const ACCOUNT_CLIENT_TOKEN = Symbol('ACCOUNT_CLIENT_TOKEN')
@@ -22,5 +24,13 @@ export class AccountClientGrpc implements OnModuleInit {
 
 	getProfile(request: GetProfileRequest) {
 		return this.accountService.getProfile(request)
+	}
+
+	initContactChange(request: InitContactChangeRequest) {
+		return this.accountService.initContactChange(request)
+	}
+
+	confirmContactChange(request: ConfirmContactChangeRequest) {
+		return this.accountService.confirmContactChange(request)
 	}
 }
