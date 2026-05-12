@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Get,
+	Patch,
+	Post,
+	HttpCode,
+	HttpStatus
+} from '@nestjs/common'
 import { AccountClientGrpc } from './account.grpc'
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { Protected } from 'src/common/decorators'
@@ -29,11 +37,12 @@ export class AccountController {
 	})
 	@Protected()
 	@ApiBearerAuth()
+	@HttpCode(HttpStatus.OK)
 	initContactChange(@Body() dto: InitContactChangeDto) {
 		return this.client.initContactChange({ ...dto })
 	}
 
-	@Post('contact-change/confirm')
+	@Patch('contact-change/confirm')
 	@ApiOperation({
 		summary: 'Confirm contact change',
 		description:
@@ -41,6 +50,7 @@ export class AccountController {
 	})
 	@Protected()
 	@ApiBearerAuth()
+	@HttpCode(HttpStatus.OK)
 	confirmContactChange(@Body() dto: ConfirmContactChangeDto) {
 		return this.client.confirmContactChange({ ...dto })
 	}
