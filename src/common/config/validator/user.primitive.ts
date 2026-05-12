@@ -3,9 +3,7 @@ import { ContactType } from '@ramz001-cinema/contracts/gen/common/v1'
 import { describeEnum } from 'src/common/docs/describe-enum'
 import validator from 'validator'
 
-export const userId = z.uuid({
-	error: 'Invalid user ID format. Expected a UUID string.'
-})
+export const userId = z.string().regex(/^[A-Za-z0-9_-]+$/, 'Invalid ID format')
 
 export const otp = z
 	.string()

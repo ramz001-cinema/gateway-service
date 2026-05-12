@@ -1,6 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common'
 import { AuthenticatedRequest } from '../guards'
-import { userId } from '../config/validator'
 
 /// Custom decorator to extract the current user's ID from the request object
 export const CurrentUser = createParamDecorator(
@@ -13,6 +12,6 @@ export const CurrentUser = createParamDecorator(
 			return null
 		}
 
-		return userId.parse(request?.user?.id)
+		return user_id
 	}
 )
