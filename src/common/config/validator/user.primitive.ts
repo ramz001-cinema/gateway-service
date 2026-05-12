@@ -29,7 +29,9 @@ export const validateContactIdentifier = ({
 	return false
 }
 
-const contact_type = z.enum(ContactType).describe(describeEnum(ContactType))
+export const contact_type = z
+	.enum(ContactType)
+	.describe(describeEnum(ContactType))
 
 export const contact_identifier = z
 	.object({

@@ -1,17 +1,17 @@
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
 import {
-	contact_identifier,
 	userId,
-	validateContactIdentifier
+	validateContactIdentifier,
+	contact_type
 } from 'src/common/config/validator/user.primitive'
 
-const InitContactChange = contact_identifier
-	.extend({
+const InitContactChange = z
+	.object({
 		newContact: z.string(),
-		userId
+		userId,
+		type: contact_type
 	})
-	.omit({ identifier: true })
 	.refine(
 		({ type, newContact }) =>
 			validateContactIdentifier({ type, identifier: newContact }),

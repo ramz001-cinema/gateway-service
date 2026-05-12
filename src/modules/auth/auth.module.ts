@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 
-import { PROTO_PATHS } from '@ramz001-cinema/contracts'
+import { PROTO_PATHS, PROTO_ROOT } from '@ramz001-cinema/contracts'
 import { AuthController } from './auth.controller'
 import { AuthClientGrpc } from './auth.grpc'
 import { AUTH_V1_PACKAGE_NAME } from '@ramz001-cinema/contracts/gen/auth/v1'
@@ -14,7 +14,10 @@ import { createGrpcClient } from 'src/common/utils/create-grpc-client'
 			AUTH_CLIENT_TOKEN,
 			{
 				package: AUTH_V1_PACKAGE_NAME,
-				protoPath: PROTO_PATHS.AUTH
+				protoPath: PROTO_PATHS.AUTH,
+				loader: {
+					includeDirs: [PROTO_ROOT]
+				}
 			},
 			'AUTH_GRPC_URL'
 		)

@@ -1,16 +1,17 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-	contact_identifier,
 	otp,
-	userId
+	userId,
+	contact_type
 } from 'src/common/config/validator/user.primitive'
+import z from 'zod'
 
-const ConfirmContactChange = contact_identifier
-	.extend({
+const ConfirmContactChange = z
+	.object({
 		userId,
-		otp
+		otp,
+		type: contact_type
 	})
-	.omit({ identifier: true })
 	.strict()
 
 export class ConfirmContactChangeDto extends createZodDto(
