@@ -1,3 +1,10 @@
+allowBuilds:
+  '@scarf/scarf': true
+  protobufjs: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@ramz001-cinema/contracts@3.2.0'
+  - '@ramz001-cinema/passport@1.0.5'
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@scarf/scarf'
