@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	Get,
 	HttpCode,
 	HttpStatus,
 	Post,
@@ -184,5 +185,29 @@ export class AuthController {
 		})
 
 		return { ok: true }
+	}
+
+	@ApiOperation({
+		summary: 'Init Telegram Authentication',
+		description:
+			'Initializes the Telegram authentication flow and returns a URL that the user must open to complete authentication with Telegram.'
+	})
+	@ApiOkResponse({
+		description: 'Telegram authentication URL has been generated.',
+		schema: {
+			type: 'object',
+			properties: {
+				url: {
+					type: 'string',
+					description:
+						'URL the user must open to complete authentication with Telegram.'
+				}
+			}
+		}
+	})
+	@Get('telegram')
+	@HttpCode(HttpStatus.OK)
+	telegramInit() {
+		return this.client.telegramInit({})
 	}
 }
