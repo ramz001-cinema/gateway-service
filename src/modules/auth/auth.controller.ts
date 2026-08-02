@@ -17,7 +17,7 @@ import {
 import { ZodApiError } from 'src/common/docs/zod-api-error'
 
 import { AuthClientGrpc } from './auth.grpc'
-import { SendOTPDto, VerifyOTPDto } from './dto'
+import { SendOTPDto, VerifyOTPDto, TelegramVerifyDto } from './dto'
 import express from 'express'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
@@ -209,5 +209,12 @@ export class AuthController {
 	@HttpCode(HttpStatus.OK)
 	telegramInit() {
 		return this.client.telegramInit({})
+	}
+
+	@Post('telegram/verify')
+	@HttpCode(HttpStatus.OK)
+	telegramVerify(@Body() dto: TelegramVerifyDto) {
+		const query = JSON.parse(atob(dto.query))
+		console.log('query', query)
 	}
 }

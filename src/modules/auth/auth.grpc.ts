@@ -5,7 +5,8 @@ import {
 	SendOtpRequest,
 	VerifyOtpRequest,
 	RefreshTokenRequest,
-	TelegramInitRequest
+	TelegramInitRequest,
+	TelegramVerifyRequest
 } from '@ramz001-cinema/contracts/gen/auth/v1'
 
 export const AUTH_CLIENT_TOKEN = Symbol('AUTH_CLIENT_TOKEN')
@@ -37,5 +38,9 @@ export class AuthClientGrpc implements OnModuleInit {
 
 	telegramInit(request: TelegramInitRequest) {
 		return this.authService.telegramInit(request)
+	}
+
+	telegramVerify(request: TelegramVerifyRequest) {
+		return this.authService.telegramVerify(request)
 	}
 }
