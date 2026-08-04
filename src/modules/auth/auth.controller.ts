@@ -7,7 +7,8 @@ import {
 	HttpStatus,
 	Post,
 	Req,
-	Res
+	Res,
+	UnauthorizedException
 } from '@nestjs/common'
 import {
 	ApiBadRequestResponse,
@@ -17,7 +18,12 @@ import {
 import { ZodApiError } from 'src/common/docs/zod-api-error'
 
 import { AuthClientGrpc } from './auth.grpc'
-import { SendOTPDto, VerifyOTPDto, TelegramVerifyDto } from './dto'
+import {
+	SendOTPDto,
+	VerifyOTPDto,
+	TelegramVerifyDto,
+	TelegramAuthResult
+} from './dto'
 import express from 'express'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
@@ -213,8 +219,36 @@ export class AuthController {
 
 	@Post('telegram/verify')
 	@HttpCode(HttpStatus.OK)
-	telegramVerify(@Body() dto: TelegramVerifyDto) {
-		const query = JSON.parse(atob(dto.query))
-		console.log('query', query)
+	async telegramVerify(
+		@Body() dto: TelegramVerifyDto,
+		@Res({ passthrough: true }) res: express.Response
+	) {
+		const authResult = TelegramAuthResult.parse(JSON.parse(atob(dto.query)))
+		console.log('authResult', authResult)
+
+		const result = await lastValueFrom(
+			this.client.telegramVerify({ authResult })
+		)
+
+		if (result?.url) return result
+
+		if (result?.accessToken && result?.refreshToken) {
+			const { accessToken, refreshToken } = result
+
+			res.cookie('refreshToken', refreshToken, {
+				httpOnly: true,
+				secure:
+					this.configService.get<string>('NODE_ENV') === 'production'
+						? true
+						: false,
+				domain: this.configService.get<string>('COOKIES_DOMAIN'),
+				sameSite: 'lax',
+				maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+			})
+
+			return { accessToken }
+		}
+
+		throw new UnauthorizedException('Telegram authentication failed')
 	}
 }
