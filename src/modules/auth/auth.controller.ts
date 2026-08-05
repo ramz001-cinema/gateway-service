@@ -18,12 +18,7 @@ import {
 import { ZodApiError } from 'src/common/docs/zod-api-error'
 
 import { AuthClientGrpc } from './auth.grpc'
-import {
-	SendOTPDto,
-	VerifyOTPDto,
-	TelegramVerifyDto,
-	TelegramAuthResult
-} from './dto'
+import { SendOTPDto, VerifyOTPDto, TelegramVerifyDto } from './dto'
 import express from 'express'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
@@ -223,8 +218,9 @@ export class AuthController {
 		@Body() dto: TelegramVerifyDto,
 		@Res({ passthrough: true }) res: express.Response
 	) {
-		const authResult = TelegramAuthResult.parse(JSON.parse(atob(dto.query)))
-		console.log('authResult', authResult)
+		const authResult = JSON.parse(
+			Buffer.from(dto.tgAuthResult, 'base64url').toString('utf-8')
+		) as Record<string, string>
 
 		const result = await lastValueFrom(
 			this.client.telegramVerify({ authResult })

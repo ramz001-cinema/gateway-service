@@ -16,6 +16,18 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter {
 		)
 	}
 
+	private isMalformedInput(exception: unknown): boolean {
+		if (exception instanceof SyntaxError) {
+			return true
+		}
+
+		return (
+			typeof exception === 'object' &&
+			exception !== null &&
+			(exception as Error).name === 'InvalidCharacterError'
+		)
+	}
+
 	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp()
 		const response = ctx.getResponse<Response>()
@@ -41,6 +53,13 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter {
 							message: exception.message
 						}
 			)
+		}
+
+		if (this.isMalformedInput(exception)) {
+			return response.status(HttpStatus.BAD_REQUEST).json({
+				statusCode: HttpStatus.BAD_REQUEST,
+				message: 'Malformed request payload'
+			})
 		}
 
 		return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
