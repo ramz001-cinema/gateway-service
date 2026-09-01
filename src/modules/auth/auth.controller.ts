@@ -13,7 +13,8 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiOkResponse,
-	ApiOperation
+	ApiOperation,
+	ApiUnauthorizedResponse
 } from '@nestjs/swagger'
 import { ZodApiError } from 'src/common/docs/zod-api-error'
 
@@ -212,6 +213,49 @@ export class AuthController {
 		return this.client.telegramInit({})
 	}
 
+	@ApiOperation({
+		summary: 'Verify Telegram Authentication',
+		description:
+			'Verifies the base64url-encoded Telegram auth result. If the account needs more info, returns a URL to continue; otherwise returns an access token (refresh token set as an HTTP-only cookie).'
+	})
+	@ApiOkResponse({
+		description:
+			'URL to continue the flow, or access token for the authenticated user.',
+		schema: {
+			oneOf: [
+				{
+					type: 'object',
+					properties: {
+						url: {
+							type: 'string',
+							description:
+								'URL the user must open to complete authentication with Telegram.'
+						}
+					}
+				},
+				{
+					type: 'object',
+					properties: {
+						accessToken: {
+							type: 'string',
+							description:
+								'JWT access token for authenticated user.'
+						}
+					}
+				}
+			]
+		}
+	})
+	@ApiBadRequestResponse({
+		description: 'Validation failed.',
+		schema: {
+			type: 'object',
+			properties: ZodApiError
+		}
+	})
+	@ApiUnauthorizedResponse({
+		description: 'Telegram authentication failed.'
+	})
 	@Post('telegram/verify')
 	@HttpCode(HttpStatus.OK)
 	async telegramVerify(
