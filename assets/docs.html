@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Cinema Gateway API</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e11d48'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3EC%3C/text%3E%3C/svg%3E"
+    />
+
+    <!--
+      Theme bootstrap. Runs BEFORE the Elements bundle on purpose: @stoplight/mosaic reads the
+      <html data-theme> attribute once at startup to seed its own run. After that, swapping the
+      attribute is enough — Mosaic's CSS custom properties (--color-canvas, --color-text, …) are
+      defined per [data-theme], so every Mosaic surface re-themes live.
+
+      Preference is per browser: an explicit Light/Dark choice is remembered, otherwise the OS
+      setting is followed (and kept in step while the page is open).
+    -->
+    <script>
+      (function () {
+        var CHOICE_KEY = 'cinema-docs-theme'; // 'dark' | 'light' once the reader overrides
+        var MOSAIC_KEY = 'mosaic-theme'; // @stoplight/mosaic caches its own mode here
+        var media = window.matchMedia('(prefers-color-scheme: dark)');
+        var choice = null; // null = follow the system
+
+        try {
+          var saved = localStorage.getItem(CHOICE_KEY);
+          if (saved === 'dark' || saved === 'light') choice = saved;
+          // Mosaic writes this on every load, which would outlive a system theme change; drop it
+          // so it re-derives again from the attribute we set below.
+          localStorage.removeItem(MOSAIC_KEY);
+        } catch (error) {
+          // Unreadable storage (private mode): just follow the system.
+        }
+
+        function resolve() {
+          return choice || (media.matches ? 'dark' : 'light');
+        }
+
+        function apply() {
+          document.documentElement.setAttribute('data-theme', resolve());
+        }
+
+        window.cinemaDocsTheme = {
+          /** @returns {'dark'|'light'|null} The override, or null while following the system. */
+          get choice() {
+            return choice;
+          },
+          /** @returns {'dark'|'light'} The theme actually in effect. */
+          get theme() {
+            return resolve();
+          },
+          /** @param {'dark'|'light'|'system'} next */
+          set: function (next) {
+            choice = next === 'system' ? null : next;
+            try {
+              if (choice) localStorage.setItem(CHOICE_KEY, choice);
+              else localStorage.removeItem(CHOICE_KEY);
+            } catch (error) {
+              // The choice just will not outlive the page.
+            }
+            apply();
+          }
+        };
+
+        var onSystemChange = function () {
+          if (!choice) apply();
+        };
+
+        if (media.addEventListener) media.addEventListener('change', onSystemChange);
+        else media.addListener(onSystemChange); // Safari < 14
+
+        apply();
+      })();
+    </script>
+
+    <!--
+      The web-component bundle registers <elements-api>; the spec is served by this gateway at
+      /api/openapi.json (built by @nestjs/swagger, upgraded to OpenAPI 3.1). The spec carries no
+      `servers`, so Try It targets whichever host serves this page.
+    -->
+    <script
+      src="https://unpkg.com/@stoplight/elements/web-components.min.js"
+      defer
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@stoplight/elements/styles.min.css"
+    />
+
+    <style>
+      /* The document around the component is unstyled, so paint it from the Mosaic palette that
+         [data-theme] swaps. color-scheme keeps native chrome (scrollbars, caret, the search field's
+         clear button) in step with the theme. */
+      :root {
+        color-scheme: light;
+      }
+
+      html[data-theme='dark'] {
+        color-scheme: dark;
+      }
+
+      /* Deep-navy dark theme, in the spirit of Scalar's classic dark look: near-black indigo
+         canvas, layered navy panels, cool slate text, cinema-rose accent. Overrides Mosaic's
+         default greys. The `html[...]` selector is more specific than the stylesheet's own
+         `[data-theme=dark]` rule, so this wins regardless of load order.
+
+         The seeds (--canvas-h/s/l, --text-h/s/l) drive every derived colour; the explicit
+         surfaces below are the ones that need pinning to the exact navy. */
+      html[data-theme='dark'] {
+        --canvas-h: 228;
+        --canvas-s: 36%;
+        --canvas-l: 6%;
+
+        --text-h: 220;
+        --text-s: 17%;
+        --text-l: 91%;
+
+        /* Surfaces, darkest (page) → lightest (raised controls). */
+        --color-canvas: #0a0c14;
+        --color-canvas-pure: #070810;
+        --color-canvas-500: #080a12;
+        --color-canvas-400: #090b14;
+        --color-canvas-300: #0c0f1a;
+        --color-canvas-200: #101422;
+        --color-canvas-100: #151a2c;
+        --color-canvas-50: #232a42;
+        --color-canvas-dark: #2c3550;
+        --color-canvas-dialog: #151a2c;
+        --color-canvas-tint: rgba(52, 63, 100, 0.22);
+
+        --color-border: rgba(72, 84, 128, 0.42);
+        --color-border-light: rgba(72, 84, 128, 0.26);
+        --color-border-dark: rgba(72, 84, 128, 0.6);
+        --color-border-input: rgba(84, 98, 148, 0.5);
+        --color-border-button: rgba(84, 98, 148, 0.6);
+
+        /* Cinema rose as the accent — matches the storefront, and Scalar's own red accent. */
+        --color-primary: #e11d48;
+        --color-primary-dark: #be123c;
+        --color-primary-darker: #9f1239;
+        --color-primary-light: #fb7185;
+        --color-primary-tint: rgba(225, 29, 72, 0.15);
+        --color-on-primary: #ffffff;
+        --color-text-primary: #fb7185;
+        --color-link: #fb7185;
+        --color-link-dark: #f43f5e;
+
+        /* Inline code chips, retinted from Mosaic's grey to the navy. */
+        --color-code: #161b2e;
+        --color-on-code: #f9d6e0;
+      }
+
+      /* Try It lives inside Mosaic's `.sl-inverted` surface, which re-declares its own blue
+         `--color-primary` for that subtree. Pin the accent there too, so the Send button and any
+         focus ring inside the panel match the page. */
+      html[data-theme='dark'] .sl-inverted,
+      html[data-theme='dark'] .sl-inverted .sl-inverted {
+        --color-primary: #e11d48;
+        --color-primary-dark: #be123c;
+        --color-primary-darker: #9f1239;
+        --color-primary-light: #fb7185;
+        --color-primary-tint: rgba(225, 29, 72, 0.15);
+        --color-on-primary: #ffffff;
+        --color-text-primary: #fb7185;
+      }
+
+      /* A faint rose bloom behind the header — the one flourish that stops it reading as plain
+         "dark mode". Sits beneath Elements' opaque surfaces, so it only shows at the page edges. */
+      html[data-theme='dark'] body {
+        background-image: radial-gradient(
+          1100px 520px at 50% -12%,
+          rgba(225, 29, 72, 0.07),
+          transparent 70%
+        );
+        background-repeat: no-repeat;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: var(--color-canvas, #fff);
+        color: var(--color-text, #1a1a1a);
+      }
+
+      /* Give the request/response pane more room than Elements' default 500px cap. */
+      div[data-testid='two-column-left'] {
+        width: 45% !important;
+        max-width: none !important;
+        flex: none !important;
+      }
+
+      div[data-testid='two-column-right'] {
+        width: 55% !important;
+        max-width: none !important;
+        flex: none !important;
+      }
+
+      /* Code samples pick their syntax palette in JS, and the web-component build never flips that
+         switch, so it inlines the LIGHT palette onto the dark panels. Restate the dark palette in
+         terms of the token classes it emits; `!important` beats the inline colours. */
+      [data-theme='dark'] .token.comment,
+      [data-theme='dark'] .token.prolog,
+      [data-theme='dark'] .token.cdata,
+      [data-theme='dark'] .token.doctype {
+        color: #8b949e !important;
+      }
+
+      [data-theme='dark'] .token.punctuation {
+        color: inherit !important;
+      }
+
+      [data-theme='dark'] .token.string,
+      [data-theme='dark'] .token.attr-value,
+      [data-theme='dark'] .token.regex {
+        color: #a5d6ff !important;
+      }
+
+      [data-theme='dark'] .token.attr-name,
+      [data-theme='dark'] .token.function,
+      [data-theme='dark'] .token.url,
+      [data-theme='dark'] .token.inserted {
+        color: #d2a8ff !important;
+      }
+
+      [data-theme='dark'] .token.operator,
+      [data-theme='dark'] .token.keyword,
+      [data-theme='dark'] .token.rule,
+      [data-theme='dark'] .token.atrule,
+      [data-theme='dark'] .token.command {
+        color: #ff7b72 !important;
+      }
+
+      [data-theme='dark'] .token.boolean,
+      [data-theme='dark'] .token.symbol,
+      [data-theme='dark'] .token.number,
+      [data-theme='dark'] .token.constant {
+        color: #79c0ff !important;
+      }
+
+      [data-theme='dark'] .token.property,
+      [data-theme='dark'] .token.option,
+      [data-theme='dark'] .token.literal,
+      [data-theme='dark'] .token.class-name,
+      [data-theme='dark'] .token.tag {
+        color: #7ee787 !important;
+      }
+
+      [data-theme='dark'] .token.namespace,
+      [data-theme='dark'] .token.variable,
+      [data-theme='dark'] .token.selector {
+        color: rgb(178 204 214) !important;
+      }
+
+      /* The light palette also paints pale chips behind diff lines. */
+      [data-theme='dark'] .token.inserted,
+      [data-theme='dark'] .token.deleted {
+        background: none !important;
+      }
+
+      /* Sidebar toolbar (built by the script at the bottom of this file). Layout lives in the
+         script; colours and hover live here so the toolbar follows the active theme. */
+      #cg-toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 12px 6px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: inherit;
+      }
+
+      #cg-toolbar input,
+      #cg-toolbar button {
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 12px;
+        border: 1px solid var(--color-border-input, #d1d5db);
+        border-radius: 6px;
+        background: var(--color-canvas-pure, #fff);
+        color: var(--color-text, #1a1a1a);
+      }
+
+      #cg-toolbar button {
+        cursor: pointer;
+        padding: 5px 8px;
+      }
+
+      #cg-toolbar button:hover {
+        border-color: var(--color-primary, #e11d48);
+        color: var(--color-primary, #e11d48);
+      }
+
+      #cg-toolbar input:focus,
+      #cg-toolbar button:focus-visible {
+        outline: none;
+        border-color: var(--color-primary, #e11d48);
+      }
+
+      #cg-toolbar .cg-row {
+        display: flex;
+        gap: 6px;
+      }
+
+      #cg-search {
+        flex: 1;
+        min-width: 0;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+
+      #cg-toolbar .cg-action {
+        flex: 1;
+      }
+
+      /* Icon-only, so it never squeezes the two text buttons. */
+      #cg-theme {
+        flex: 0 0 auto;
+        width: 30px;
+        padding: 5px 0;
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      /* Ctrl/⌘+Enter hint beside the Try It send button — a keyboard cap, not a control, so it has
+         no hover/focus styling and no pointer cursor. */
+      .cg-send-key {
+        margin-left: 8px;
+        padding: 1px 6px;
+        border: 1px solid var(--color-border-input, #d1d5db);
+        border-radius: 4px;
+        background: var(--color-canvas-pure, #fff);
+        color: var(--color-text, #1a1a1a);
+        font-family: inherit;
+        font-size: 11px;
+        line-height: 1.5;
+        white-space: nowrap;
+        user-select: none;
+      }
+
+      /* "Copy access token" button, injected into the Try It response title bar after a successful
+         login/refresh. Compact so it sits beside the panel's own Body Format control. */
+      #cg-copy-token {
+        flex: 0 0 auto;
+        margin-right: 6px;
+        padding: 3px 10px;
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 1.5;
+        border: 1px solid var(--color-border-input, #d1d5db);
+        border-radius: 6px;
+        background: var(--color-canvas-pure, #fff);
+        color: var(--color-text, #1a1a1a);
+        cursor: pointer;
+      }
+
+      #cg-copy-token:hover {
+        border-color: var(--color-primary, #e11d48);
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Options reference:
+      https://github.com/stoplightio/elements/blob/main/docs/getting-started/elements/elements-options.md
+    -->
+    <elements-api
+      id="cg-elements-api"
+      apiDescriptionUrl="/api/openapi.json"
+      layout="responsive"
+      router="hash"
+      hideInternal="true"
+      tryItCredentialsPolicy="same-origin"
+    ></elements-api>
+
+    <script>
+      // Sidebar toolbar + Try It niceties for the Elements web component:
+      //   • endpoint search (Elements OSS ships none)
+      //   • expand/collapse every tag group
+      //   • System → Dark → Light theme toggle
+      //   • Ctrl/⌘+Enter to send, with an on-button hint
+      //   • per-operation Try It request-body persistence
+      //   • "Copy access token" after a login/refresh response
+      //
+      // Everything the observer touches is idempotent, because Elements re-renders the TOC on
+      // route changes and toggles, which wipes both injected nodes and any display:none we set.
+      (function () {
+        'use strict';
+
+        var HOST_ID = 'cg-elements-api';
+        var TOOLBAR_ID = 'cg-toolbar';
+        var SEARCH_ID = 'cg-search';
+        var HINT_CLASS = 'cg-send-key';
+        var TOKEN_BTN_ID = 'cg-copy-token';
+
+        var TOC_LINK = 'a[href*="#/"]'; // an Elements TOC entry (operation or schema)
+        var SEND_LABEL = 'Send API Request'; // Elements' Try It submit button
+        var BODY_KEY_PREFIX = 'cinema-docs-body:'; // per-operation Try It request body
+
+        // Auth endpoints that mint an access token, and the one that ends the session.
+        var TOKEN_PATHS = ['/auth/otp/verify', '/auth/refresh', '/auth/telegram/verify'];
+        var LOGOUT_PATH = '/auth/logout';
+        var AUTH_OPERATION = /\/operations\/AuthController_/;
+
+        var host = document.getElementById(HOST_ID);
+
+        var query = '';
+        var token = null; // accessToken from the last successful login/refresh
+        var bodySync = { node: null, key: null }; // the Try It body editor already restored
+        var toggleTimer = null; // timer id of an in-flight expand/collapse-all run
+
+        /* ------------------------------------------------------------------ TOC helpers */
+
+        /** The flat TOC list that holds the toolbar, Overview row, tag headers and endpoints. */
+        function tocList() {
+          var toolbar = document.getElementById(TOOLBAR_ID);
+          return toolbar ? toolbar.parentElement : null;
+        }
+
+        /** Direct children of the TOC, as an array. */
+        function tocRows() {
+          var list = tocList();
+          return list ? Array.prototype.slice.call(list.children) : [];
+        }
+
+        // Elements renders a FLAT list: Overview (<a href="#/">), section labels (<div>), tag group
+        // headers (<div title="…"> with a chevron) and their endpoint links (<a href="#/…">) are all
+        // siblings. A tag header "owns" the endpoints that follow it, until the next <div>.
+        function isGroupRow(el) {
+          return el.tagName === 'DIV' && el.id !== TOOLBAR_ID;
+        }
+
+        function isEndpoint(el) {
+          return el.tagName === 'A' && el.getAttribute('href') !== '#/';
+        }
+
+        /** Group headers currently showing the given chevron: 'chevron-right' = collapsed. */
+        function chevronHeaders(icon) {
+          return tocRows().filter(function (el) {
+            return isGroupRow(el) && el.querySelector('svg[data-icon="' + icon + '"]');
+          });
+        }
+
+        /* ------------------------------------------------------------------ search */
+
+        function applyFilter() {
+          var rows = tocRows();
+          if (!rows.length) return;
+
+          // While searching, reveal collapsed groups so their endpoints exist to be matched; the
+          // observer re-runs this as each group opens, until no collapsed group remains.
+          if (query) chevronHeaders('chevron-right').forEach(function (h) { h.click(); });
+
+          // 1. Leave only endpoints whose own text matches. Overview (href="#/") is not an endpoint.
+          rows.forEach(function (el) {
+            if (!isEndpoint(el)) return;
+            el.style.display =
+              !query || el.textContent.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
+          });
+
+          // 2. Hide any group row (tag header or section label) with no visible endpoint beneath it,
+          //    up to the next group row — so no empty groups or orphan headings survive a search.
+          for (var i = 0; i < rows.length; i++) {
+            if (!isGroupRow(rows[i])) continue;
+            var show = !query;
+            for (var j = i + 1; !show && j < rows.length && !isGroupRow(rows[j]); j++) {
+              if (isEndpoint(rows[j]) && rows[j].style.display !== 'none') show = true;
+            }
+            rows[i].style.display = show ? '' : 'none';
+          }
+        }
+
+        /* ------------------------------------------------------------------ expand / collapse all */
+
+        /** Stop an in-flight expand/collapse-all run, so a manual click is never undone by it. */
+        function cancelToggleAll() {
+          if (toggleTimer === null) return;
+          clearTimeout(toggleTimer);
+          toggleTimer = null;
+        }
+
+        /**
+         * Expand or collapse every tag group. Elements re-renders the TOC on each toggle, so a
+         * static header list goes stale — click one header per tick and re-query. Each group is
+         * visited at most once (keyed by its title, stable across re-renders), so the pass ends as
+         * soon as no unvisited group remains in the wrong state and can never fight the reader.
+         *
+         * Ticks use a timer, not requestAnimationFrame: rAF is paused in a hidden tab, and the run
+         * must still finish if the reader switches away mid-pass.
+         *
+         * @param {boolean} expand - true to expand, false to collapse.
+         */
+        function toggleAll(expand) {
+          cancelToggleAll();
+          var icon = expand ? 'chevron-right' : 'chevron-down';
+          var visited = {};
+
+          var step = function () {
+            toggleTimer = null;
+            var remaining = chevronHeaders(icon).filter(function (h) {
+              return !visited[h.getAttribute('title')];
+            });
+            if (!remaining.length) return;
+
+            var header = remaining[0];
+            visited[header.getAttribute('title')] = true;
+            header.click();
+            toggleTimer = setTimeout(step, 0);
+          };
+
+          toggleTimer = setTimeout(step, 0);
+        }
+
+        /* ------------------------------------------------------------------ toolbar */
+
+        function toolbarButton(label, onClick, className) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = label;
+          b.className = className || 'cg-action';
+          b.addEventListener('click', onClick);
+          return b;
+        }
+
+        /** Theme toggle cycling System → Dark → Light. Glyph shows what is in effect. */
+        function themeButton() {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.id = 'cg-theme';
+          b.className = '';
+
+          var render = function () {
+            var choice = window.cinemaDocsTheme.choice;
+            var theme = window.cinemaDocsTheme.theme;
+            b.textContent = choice === 'dark' ? '☾' : choice === 'light' ? '☀' : '◐';
+            b.title =
+              choice === null
+                ? 'Theme: following your system (' + theme + ') — click for dark mode'
+                : 'Theme: ' + choice + ' — click for ' + (choice === 'dark' ? 'light' : 'system') + ' mode';
+          };
+
+          b.addEventListener('click', function () {
+            var choice = window.cinemaDocsTheme.choice;
+            window.cinemaDocsTheme.set(
+              choice === null ? 'dark' : choice === 'dark' ? 'light' : 'system'
+            );
+            render();
+          });
+
+          render();
+          return b;
+        }
+
+        function buildToolbar() {
+          var wrapper = document.createElement('div');
+          wrapper.id = TOOLBAR_ID;
+
+          // The toolbar lives inside Elements' TOC, which delegates click/keyboard handlers on the
+          // sidebar and would otherwise swallow our input's events. Keep them local.
+          ['mousedown', 'pointerdown', 'click', 'keydown', 'keyup', 'input'].forEach(function (evt) {
+            wrapper.addEventListener(evt, function (e) { e.stopPropagation(); });
+          });
+
+          var input = document.createElement('input');
+          input.id = SEARCH_ID;
+          input.type = 'search';
+          input.placeholder = 'Search endpoints…';
+          input.autocomplete = 'off';
+          input.spellcheck = false;
+          input.addEventListener('input', function () {
+            query = input.value.trim().toLowerCase();
+            applyFilter();
+          });
+
+          var searchRow = document.createElement('div');
+          searchRow.className = 'cg-row';
+          searchRow.appendChild(input);
+
+          var actions = document.createElement('div');
+          actions.className = 'cg-row';
+          actions.appendChild(toolbarButton('Expand all', function () { toggleAll(true); }));
+          actions.appendChild(toolbarButton('Collapse all', function () { toggleAll(false); }));
+          actions.appendChild(themeButton());
+
+          wrapper.appendChild(searchRow);
+          wrapper.appendChild(actions);
+          return wrapper;
+        }
+
+        function ensureToolbar() {
+          if (!host || document.getElementById(TOOLBAR_ID)) return;
+          var overview = host.querySelector('a[href="#/"]');
+          if (!overview) return; // TOC not rendered yet
+
+          overview.parentElement.insertBefore(buildToolbar(), overview);
+          var box = document.getElementById(SEARCH_ID);
+          if (box && query) box.value = query; // survive re-mounts
+        }
+
+        /* ------------------------------------------------------------------ send hint + shortcut */
+
+        function decorateSendButtons() {
+          // ⌘ on Apple hardware, Ctrl elsewhere — the same key the shortcut below accepts.
+          var key = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
+          var buttons = host.querySelectorAll('button');
+
+          for (var i = 0; i < buttons.length; i++) {
+            var b = buttons[i];
+            if (b.textContent.trim() !== SEND_LABEL) continue;
+
+            // The tag is a SIBLING of the button, never a child: Elements swaps the button's own
+            // contents while a request is in flight (spinner), and a child would also join its
+            // accessible name.
+            var parent = b.parentElement;
+            if (!parent || parent.querySelector('.' + HINT_CLASS)) continue;
+
+            var hint = document.createElement('kbd');
+            hint.className = HINT_CLASS;
+            hint.textContent = key + ' ↵';
+            hint.title = 'Send the request (' + key + ' + Enter)';
+            parent.insertBefore(hint, b.nextSibling);
+          }
+        }
+
+        /** First enabled, on-screen "Send API Request" button (several can exist, one visible). */
+        function visibleSendButton() {
+          var buttons = host.querySelectorAll('button');
+          for (var i = 0; i < buttons.length; i++) {
+            var b = buttons[i];
+            if (b.textContent.trim() === SEND_LABEL && !b.disabled && b.getClientRects().length) {
+              return b;
+            }
+          }
+          return null;
+        }
+
+        // Ctrl+Enter (Cmd+Enter on macOS) sends, like Postman. Bound on document in the CAPTURE
+        // phase: Monaco binds Ctrl+Enter to "insert line below", and capturing reaches us first.
+        function installSendShortcut() {
+          document.addEventListener(
+            'keydown',
+            function (event) {
+              if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+              if (event.target instanceof Element && event.target.closest('#' + TOOLBAR_ID)) return;
+              if (!host) return;
+
+              var send = visibleSendButton();
+              if (!send) return; // not in Try It — leave the key alone
+
+              event.preventDefault();
+              event.stopPropagation();
+              send.click();
+            },
+            true
+          );
+        }
+
+        /* ------------------------------------------------------------------ request body persistence */
+
+        function bodyTextarea() {
+          return host.querySelector('.TryItPanel .TextRequestBody textarea');
+        }
+
+        /** localStorage key for the Try It body of the operation currently in the URL. */
+        function bodyKey() {
+          return BODY_KEY_PREFIX + (window.location.hash || '#/');
+        }
+
+        /** Write into the controlled textarea through React's own setter, then fire its input event. */
+        function setTextareaValue(textarea, value) {
+          var setter = Object.getOwnPropertyDescriptor(
+            HTMLTextAreaElement.prototype,
+            'value'
+          ).set;
+          setter.call(textarea, value);
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        /**
+         * Restore the saved body the first time the editor for the current operation appears, so a
+         * refresh — or a trip to another endpoint and back — keeps what was typed. Runs once per
+         * editor: after that, the reader's own edits must win.
+         */
+        function restoreBody() {
+          var textarea = bodyTextarea();
+          if (!textarea) return;
+
+          var key = bodyKey();
+          if (bodySync.node === textarea && bodySync.key === key) return;
+          bodySync = { node: textarea, key: key }; // claim this editor before touching it
+
+          var saved = null;
+          try {
+            saved = localStorage.getItem(key);
+          } catch (error) {
+            // Unreadable storage: nothing to restore.
+          }
+
+          if (saved !== null && textarea.value !== saved) setTextareaValue(textarea, saved);
+        }
+
+        /* ------------------------------------------------------------------ access token capture + copy */
+
+        function installFetchWrapper() {
+          var originalFetch = window.fetch;
+
+          window.fetch = function (input, init) {
+            var request = originalFetch.apply(this, arguments);
+            captureToken(input, init, request);
+            return request;
+          };
+        }
+
+        /**
+         * Watch login/refresh responses for an accessToken, and clear it on logout. A failed call
+         * leaves the held token untouched; a successful logout drops it.
+         *
+         * @param {string|URL|Request} input - The fetch input.
+         * @param {RequestInit|undefined} init - The fetch init.
+         * @param {Promise<Response>} request - The in-flight response promise.
+         */
+        function captureToken(input, init, request) {
+          var url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
+          var method = (init && init.method ? init.method : input instanceof Request ? input.method : 'GET')
+            .toUpperCase();
+          if (method !== 'POST') return;
+
+          var path;
+          try {
+            path = new URL(url, window.location.href).pathname;
+          } catch (error) {
+            return;
+          }
+
+          var mintsToken = TOKEN_PATHS.some(function (p) { return path.endsWith(p); });
+          var isLogout = path.endsWith(LOGOUT_PATH);
+          if (!mintsToken && !isLogout) return;
+
+          request
+            .then(function (response) {
+              if (!response.ok) return;
+              return response
+                .clone()
+                .json()
+                .then(function (body) {
+                  if (isLogout) token = null;
+                  else if (body && typeof body.accessToken === 'string') token = body.accessToken;
+                  injectTokenButton();
+                })
+                .catch(function () {}); // non-JSON body: nothing to read
+            })
+            .catch(function () {}); // network error: Elements already shows it
+        }
+
+        /** The Try It response panel's title bar (a sibling of .TryItPanel, sharing a wrapper). */
+        function responseTitlebar() {
+          var panel = host.querySelector('.TryItPanel');
+          var scope = panel && panel.parentElement;
+          if (!scope) return null;
+
+          var bars = scope.querySelectorAll(':scope > .sl-panel > .sl-panel__titlebar');
+          for (var i = 0; i < bars.length; i++) {
+            if (bars[i].textContent.trim().indexOf('Response') === 0) return bars[i];
+          }
+          return null;
+        }
+
+        /** Copy text, preferring the async clipboard API and falling back to execCommand. */
+        function copyText(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text).catch(function () { return legacyCopy(text); });
+          }
+          return Promise.resolve(legacyCopy(text));
+        }
+
+        function legacyCopy(text) {
+          var scratch = document.createElement('textarea');
+          scratch.value = text;
+          scratch.setAttribute('readonly', '');
+          scratch.style.position = 'fixed';
+          scratch.style.opacity = '0';
+          document.body.appendChild(scratch);
+          scratch.select();
+          try {
+            document.execCommand('copy');
+          } finally {
+            scratch.remove();
+          }
+        }
+
+        /**
+         * Add the "Copy access token" button to the Try It Response title bar once a token has been
+         * captured, and remove it on any other operation. Idempotent.
+         */
+        function injectTokenButton() {
+          if (!host) return;
+
+          var existing = document.getElementById(TOKEN_BTN_ID);
+          var relevant = token && AUTH_OPERATION.test(window.location.hash);
+          if (!relevant) {
+            if (existing) existing.remove();
+            return;
+          }
+
+          var bar = responseTitlebar();
+          if (!bar || bar.querySelector('#' + TOKEN_BTN_ID)) return;
+
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.id = TOKEN_BTN_ID;
+          button.textContent = 'Copy access token';
+          button.title = 'Copy the accessToken from this response';
+          // The title bar toggles the panel on click; keep our own click out of that handler.
+          button.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            copyText(token);
+            button.textContent = 'Copied!';
+            setTimeout(function () { button.textContent = 'Copy access token'; }, 1500);
+          });
+
+          var format = bar.querySelector('button[aria-label="Body Format"]');
+          bar.insertBefore(button, format || null);
+        }
+
+        /* ------------------------------------------------------------------ wiring */
+
+        function sync() {
+          if (!host) return;
+          decorateSendButtons();
+          ensureToolbar();
+          restoreBody();
+          injectTokenButton();
+          if (query) applyFilter();
+        }
+
+        function wire() {
+          // Elements mounts asynchronously and re-renders the TOC on route changes, wiping our
+          // toolbar and any display:none we set — so re-run on every mutation (debounced). Uses a
+          // timer rather than requestAnimationFrame so it still runs in a hidden tab.
+          observer.observe(host, { childList: true, subtree: true });
+
+          // isTrusted separates a real click from the synthetic header.click() toggleAll fires, and
+          // capture runs this before Elements handles the event.
+          host.addEventListener(
+            'click',
+            function (event) {
+              if (!event.isTrusted) return;
+              if (event.target.closest && event.target.closest('#' + TOOLBAR_ID)) return;
+              cancelToggleAll();
+            },
+            true
+          );
+
+          // Persist whatever the reader types in the Try It body, keyed to the current operation.
+          host.addEventListener('input', function (event) {
+            var target = event.target;
+            if (!(target instanceof HTMLTextAreaElement)) return;
+            if (!target.closest('.TryItPanel')) return;
+
+            try {
+              localStorage.setItem(bodyKey(), target.value);
+            } catch (error) {
+              // The body just will not outlive the page.
+            }
+          });
+
+          sync();
+        }
+
+        var pending = null;
+        var observer = new MutationObserver(function () {
+          if (pending !== null) return;
+          pending = setTimeout(function () {
+            pending = null;
+            sync();
+          }, 0);
+        });
+
+        if (host) {
+          installFetchWrapper(); // before any Try It request is made
+          installSendShortcut(); // on document, so it outlives Elements re-mounts
+          wire();
+        }
+      })();
+    </script>
+  </body>
+</html>
