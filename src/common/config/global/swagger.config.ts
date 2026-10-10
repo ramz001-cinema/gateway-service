@@ -29,11 +29,6 @@ export function setupSwagger(app: INestApplication) {
 		res.json(cleanedDoc)
 	)
 
-	// Swagger UI (raw OpenAPI spec, kept for tooling)
-	SwaggerModule.setup('api/openapi', app, cleanedDoc, {
-		swaggerOptions: { persistAuthorization: true }
-	})
-
 	// Stoplight Elements: modern docs UI with an inline Try It panel (no modal).
 	// `no-cache` means revalidate, not "don't store" — with the ETag sendFile sets, an unchanged
 	// page is a cheap 304, and an edited docs.html is never served stale.

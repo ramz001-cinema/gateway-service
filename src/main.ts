@@ -26,6 +26,5 @@ async function bootstrap() {
 	logger.log(
 		`API docs (Stoplight Elements) are available at ${host}/api/docs`
 	)
-	logger.log(`Swagger UI is available at ${host}/api/openapi`)
 }
 void bootstrap()
