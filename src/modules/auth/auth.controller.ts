@@ -54,7 +54,7 @@ export class AuthController {
 	@ApiOperation({
 		summary: 'Send OTP',
 		description:
-			'Sends a one-time password (OTP) to the user via email or phone for authentication purposes. If user does not exist, it will be created automatically.'
+			'Sends a one-time password (OTP) to the user via email or phone for authentication purposes. The user must exist. If the identifier is not registered, the request fails with a NOT_FOUND error.'
 	})
 	@ApiOkResponse({
 		description: 'OTP has been sent successfully.',
