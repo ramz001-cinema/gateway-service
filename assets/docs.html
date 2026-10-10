@@ -178,6 +178,11 @@
           rgba(225, 29, 72, 0.07),
           transparent 70%
         );
+      }
+
+      html,
+      body {
+        height: 100%;
         background-repeat: no-repeat;
       }
 
@@ -317,6 +322,20 @@
 
       #cg-toolbar .cg-action {
         flex: 1;
+      }
+
+      /* Keep the navigation anchored to the viewport while allowing long endpoint lists to
+         scroll independently from the documentation content. */
+      #cg-elements-api {
+        display: block;
+        height: 100vh;
+      }
+
+      #cg-elements-api .sl-elements-sidebar,
+      #cg-elements-api .sl-elements-nav {
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
       }
 
       /* Icon-only, so it never squeezes the two text buttons. */
