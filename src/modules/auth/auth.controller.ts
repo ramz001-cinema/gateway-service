@@ -32,6 +32,25 @@ export class AuthController {
 		private readonly configService: ConfigService<EnvType>
 	) {}
 
+	/**
+	 * Refresh-token cookie options. Empty COOKIES_DOMAIN = no Domain attribute.
+	 */
+	private refreshCookieOptions() {
+		const isProd =
+			this.configService.get<string>('NODE_ENV') === 'production'
+		const sameSite: boolean | 'lax' | 'strict' | 'none' = isProd
+			? 'none'
+			: 'lax'
+
+		return {
+			httpOnly: true,
+			secure: isProd,
+			sameSite,
+			domain:
+				this.configService.get<string>('COOKIES_DOMAIN') || undefined
+		}
+	}
+
 	@ApiOperation({
 		summary: 'Send OTP',
 		description:
@@ -96,13 +115,7 @@ export class AuthController {
 		)
 
 		res.cookie('refreshToken', refreshToken, {
-			httpOnly: true,
-			secure:
-				this.configService.get<string>('NODE_ENV') === 'production'
-					? true
-					: false,
-			domain: this.configService.get<string>('COOKIES_DOMAIN'),
-			sameSite: 'lax',
+			...this.refreshCookieOptions(),
 			maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
 		})
 
@@ -142,13 +155,7 @@ export class AuthController {
 			await lastValueFrom(this.client.refreshToken({ refreshToken }))
 
 		res.cookie('refreshToken', newRefreshToken, {
-			httpOnly: true,
-			secure:
-				this.configService.get<string>('NODE_ENV') === 'production'
-					? true
-					: false,
-			domain: this.configService.get<string>('COOKIES_DOMAIN'),
-			sameSite: 'lax',
+			...this.refreshCookieOptions(),
 			maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
 		})
 
@@ -176,14 +183,8 @@ export class AuthController {
 	@HttpCode(HttpStatus.OK)
 	logout(@Res({ passthrough: true }) res: express.Response) {
 		res.cookie('refreshToken', '', {
-			httpOnly: true,
-			secure:
-				this.configService.get<string>('NODE_ENV') === 'production'
-					? true
-					: false,
-			domain: this.configService.get<string>('COOKIES_DOMAIN'),
-			expires: new Date(0),
-			sameSite: 'lax'
+			...this.refreshCookieOptions(),
+			expires: new Date(0)
 		})
 
 		return { ok: true }
@@ -276,13 +277,7 @@ export class AuthController {
 			const { accessToken, refreshToken } = result
 
 			res.cookie('refreshToken', refreshToken, {
-				httpOnly: true,
-				secure:
-					this.configService.get<string>('NODE_ENV') === 'production'
-						? true
-						: false,
-				domain: this.configService.get<string>('COOKIES_DOMAIN'),
-				sameSite: 'lax',
+				...this.refreshCookieOptions(),
 				maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
 			})
 

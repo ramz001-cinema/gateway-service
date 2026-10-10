@@ -8,7 +8,8 @@ const envSchema = z.object({
 	HTTP_HOST: z.url().nonempty(),
 	HTTP_CORS: z.string().nonempty(),
 	AUTH_GRPC_URL: z.url().nonempty(),
-	COOKIES_DOMAIN: z.string().nonempty(),
+	// Empty = omit the cookie Domain attribute (web and API on different hosts).
+	COOKIES_DOMAIN: z.string().optional(),
 	COOKIES_SECRET: z.string().nonempty(),
 	PASSPORT_SECRET_KEY: z.string().nonempty()
 })
