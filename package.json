@@ -8,6 +8,7 @@
 	},
 	"private": true,
 	"license": "MIT",
+	"packageManager": "pnpm@11.25.0",
 	"scripts": {
 		"build": "nest build",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
